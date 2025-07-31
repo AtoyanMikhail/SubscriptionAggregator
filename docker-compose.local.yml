@@ -6,9 +6,9 @@ services:
     container_name: postgres
     restart: always
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_NAME=${DB_NAME:-subscription_aggregator}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -17,25 +17,23 @@ services:
       timeout: 5s
       retries: 5
 
-    app:
-      build:
-        context: .
-        dockerfile: Dockerfile
-      container_name: subscription-app
-      restart: always
-      ports:
-        - "8080:8080"
-      depends_on:
-        postgres:
-          condition: service_healthy
-      environment:
-        - DB_HOST=postgres
-        - DB_PORT=5432
-        - DB_USER=${DB_USER:-postgres}
-        - DB_PASSWORD=${DB_PASSWORD:-password}
-        - DB_NAME=${DB_NAME:-subscription_aggregator}
-      networks:
-        - app-network
+  app:
+    build: .
+    container_name: subscription-app
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_NAME=${DB_NAME:-subscription_aggregator}
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
