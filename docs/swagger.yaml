@@ -1,0 +1,374 @@
+basePath: /
+definitions:
+  CostResponse:
+    properties:
+      breakdown:
+        items:
+          $ref: '#/definitions/SubscriptionCostBreakdown'
+        type: array
+      end_date:
+        example: 12-2025
+        type: string
+      start_date:
+        example: 01-2025
+        type: string
+      total_cost:
+        example: 4800
+        type: integer
+      user_id:
+        example: 60601fee-2bf1-4721-ae6f-7636e79a0cba
+        type: string
+    type: object
+  CreateSubscriptionRequest:
+    properties:
+      end_date:
+        example: 12-2025
+        type: string
+      price:
+        example: 400
+        minimum: 0
+        type: integer
+      service_name:
+        example: Yandex Plus
+        type: string
+      start_date:
+        example: 07-2025
+        type: string
+      user_id:
+        example: 60601fee-2bf1-4721-ae6f-7636e79a0cba
+        type: string
+    required:
+    - price
+    - service_name
+    - start_date
+    - user_id
+    type: object
+  ErrorResponse:
+    properties:
+      error:
+        example: validation failed
+        type: string
+      message:
+        example: invalid user ID format
+        type: string
+    type: object
+  ListSubscriptionsResponse:
+    properties:
+      count:
+        example: 5
+        type: integer
+      subscriptions:
+        items:
+          $ref: '#/definitions/SubscriptionResponse'
+        type: array
+    type: object
+  SubscriptionCostBreakdown:
+    properties:
+      monthly_price:
+        example: 599
+        type: integer
+      months_count:
+        example: 6
+        type: integer
+      service_name:
+        example: Netflix
+        type: string
+      subscription_id:
+        example: 1
+        type: integer
+      total_cost:
+        example: 3594
+        type: integer
+    type: object
+  SubscriptionResponse:
+    properties:
+      end_date:
+        example: "2025-12-31T23:59:59Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      price:
+        example: 400
+        type: integer
+      service_name:
+        example: Yandex Plus
+        type: string
+      start_date:
+        example: "2025-07-01T00:00:00Z"
+        type: string
+      user_id:
+        example: 60601fee-2bf1-4721-ae6f-7636e79a0cba
+        type: string
+    type: object
+  SuccessResponse:
+    properties:
+      message:
+        example: operation completed successfully
+        type: string
+    type: object
+  UpdateSubscriptionRequest:
+    properties:
+      end_date:
+        example: 12-2025
+        type: string
+      price:
+        example: 599
+        minimum: 0
+        type: integer
+      service_name:
+        example: Netflix Premium
+        type: string
+      start_date:
+        example: 07-2025
+        type: string
+    required:
+    - price
+    - service_name
+    - start_date
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API for managing user subscriptions
+  title: Subscription Management API
+  version: "1.0"
+paths:
+  /api/v1/subscriptions:
+    post:
+      consumes:
+      - application/json
+      description: Create a new subscription for a user
+      parameters:
+      - description: Subscription data
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/CreateSubscriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/SubscriptionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Create a new subscription
+      tags:
+      - subscriptions
+  /api/v1/subscriptions/{user_id}/{subscription_id}:
+    delete:
+      description: Delete a specific subscription for a user
+      parameters:
+      - description: User ID
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Delete a subscription
+      tags:
+      - subscriptions
+    get:
+      description: Get a specific subscription for a user
+      parameters:
+      - description: User ID
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SubscriptionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get a subscription by ID
+      tags:
+      - subscriptions
+    put:
+      consumes:
+      - application/json
+      description: Update an existing subscription for a user
+      parameters:
+      - description: User ID
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Subscription ID
+        in: path
+        name: subscription_id
+        required: true
+        type: integer
+      - description: Updated subscription data
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateSubscriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SubscriptionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Update a subscription
+      tags:
+      - subscriptions
+  /api/v1/subscriptions/cost:
+    get:
+      description: Calculate total cost of chosen subscriptions for a user within
+        a specified period using query parameters
+      parameters:
+      - description: User ID
+        format: uuid
+        in: query
+        name: user_id
+        required: true
+        type: string
+      - description: Start date in MM-YYYY format
+        in: query
+        name: start_date
+        required: true
+        type: string
+      - description: End date in MM-YYYY format
+        in: query
+        name: end_date
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: Service names to filter (comma-separated)
+        in: query
+        items:
+          type: string
+        name: service_names
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CostResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Calculate total subscription cost (query params)
+      tags:
+      - subscriptions
+  /api/v1/subscriptions/user/{user_id}:
+    get:
+      description: Get all subscriptions for a specific user
+      parameters:
+      - description: User ID
+        format: uuid
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ListSubscriptionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Get all user subscriptions
+      tags:
+      - subscriptions
+  /health:
+    get:
+      description: Check if the service is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+      summary: Health check
+      tags:
+      - health
+schemes:
+- http
+- https
+swagger: "2.0"
