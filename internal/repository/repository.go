@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// SubscriptionsRepository defines the interface for database interaction
 type SubscriptionsRepository interface {
 	Create(ctx context.Context, subscription *Subscription) error
 	GetSubscription(ctx context.Context, userID string, subscriptionID int) (*Subscription, error)
