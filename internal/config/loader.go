@@ -1,14 +1,13 @@
 package config
 
 import (
-	"encoding/json"
 	"os"
-	"time"
 
 	"log"
 
 	"github.com/caarlos0/env/v10"
 	"github.com/go-playground/validator/v10"
+	"gopkg.in/yaml.v2"
 )
 
 // GetConfig sets default values to the Config struct, then tries to override them with a .json config file(configPath),
@@ -18,8 +17,8 @@ func GetConfig(configPath string) (*Config, error) {
 		setDefaults(&globalConfig)
 
 		// Overriding default values with json if there is a valid config
-		if err := loadFromJSON(configPath, &globalConfig); err != nil {
-			log.Printf("failed to load config from JSON: %s\n", err.Error())
+		if err := loadFromYAML(configPath, &globalConfig); err != nil {
+			log.Printf("failed to load config from json: %s\n", err.Error())
 		}
 
 		// Overriding json values with env
@@ -35,10 +34,8 @@ func GetConfig(configPath string) (*Config, error) {
 
 func setDefaults(cfg *Config) {
 	cfg.Server = ServerConfig{
-		Port:         "8080",
-		Host:         "0.0.0.0",
-		ReadTimeout:  Duration(30 * time.Second),
-		WriteTimeout: Duration(30 * time.Second),
+		Port: "8080",
+		Host: "0.0.0.0",
 	}
 
 	cfg.Database = DatabaseConfig{
@@ -46,24 +43,23 @@ func setDefaults(cfg *Config) {
 		Port:     "5432",
 		User:     "postgres",
 		Password: "password",
-		DBName:   "jwt",
+		DBName:   "subscription_aggregator",
 		SSLMode:  "disable",
 	}
 }
 
-func loadFromJSON(path string, cfg *Config) error {
+func loadFromYAML(path string, cfg *Config) error {
 	configPath := path
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		return nil
 	}
 
-	file, err := os.Open(configPath)
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
-	return json.NewDecoder(file).Decode(cfg)
+	return yaml.Unmarshal(data, cfg)
 }
 
 func loadFromEnv(cfg *Config) {
@@ -72,12 +68,6 @@ func loadFromEnv(cfg *Config) {
 
 func validate(cfg *Config) error {
 	validate := validator.New()
-
-	// Custom validation for Duration type: must be greater than 0
-	validate.RegisterValidation("duration_gt0", func(fl validator.FieldLevel) bool {
-		d, ok := fl.Field().Interface().(Duration)
-		return ok && d > 0
-	})
 
 	return validate.Struct(cfg)
 }
